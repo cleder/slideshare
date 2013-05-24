@@ -38,8 +38,8 @@ def callapi(func):
                 params[k] = v
         logger.debug('open url %s' % service_url)
         logger.debug('with parameters %s ' % str(params))
-        print service_url, params
         eparams = urllib.urlencode(params)
+        print service_url, eparams
         data = urllib2.urlopen(service_url, eparams).read()
         json = xmltodict.parse(data)
         return json
@@ -300,6 +300,7 @@ class SlideshareAPI(object):
         password: password of the requesting user
         """
         params = ['username', 'password' ]
+        kwargs = {}
         kwargs['username'] = username
         kwargs['password'] = password
         return params, kwargs, 'GET'

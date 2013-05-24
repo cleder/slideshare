@@ -13,21 +13,23 @@ class BasicTestCase(unittest.TestCase):
     def test_get_slideshow(self):
         api = slideshare.SlideshareAPI(API_KEY,SHARED_SECRET)
         #get slideshow by id
-        sls = api.get_slideshow(slideshow_id='21730465')
-        self.assertEqual(sls['Slideshow']['ID'], '21730465')
+        sls = api.get_slideshow(slideshow_id='21825929')
+        self.assertEqual(sls['Slideshow']['ID'], '21825929')
         sls = api.get_slideshow(slideshow_url=
-            "http://www.slideshare.net/iwlpcu/gef-iw-community-platform-101")
-        self.assertEqual(sls['Slideshow']['ID'], '21730465')
+            "http://www.slideshare.net/slidesharepython/test1-21825929")
+        self.assertEqual(sls['Slideshow']['ID'], '21825929')
+
 
     def test_get_slideshows_by_tag(self):
         api = slideshare.SlideshareAPI(API_KEY,SHARED_SECRET)
-        sls = api.get_slideshows_by_tag('water')
-        self.assertEqual(sls['Tag']['Name'], 'water')
+        sls = api.get_slideshows_by_tag('python')
+        self.assertEqual(sls['Tag']['Name'], 'python')
         self.assertFalse(sls['Tag']['Count'] == '0')
 
 
     def test_get_slideshows_by_group(self):
         api = slideshare.SlideshareAPI(API_KEY,SHARED_SECRET)
+        pass
 
     def test_get_slideshows_by_user(self):
         api = slideshare.SlideshareAPI(API_KEY,SHARED_SECRET)
@@ -36,24 +38,67 @@ class BasicTestCase(unittest.TestCase):
 
     def test_search_slideshows(self):
         api = slideshare.SlideshareAPI(API_KEY,SHARED_SECRET)
-        sls = api.search_slideshows(q='water')
-        self.assertEqual(sls['Slideshows']['Meta']['Query'], 'water')
+        sls = api.search_slideshows(q='python')
+        self.assertEqual(sls['Slideshows']['Meta']['Query'], 'python')
         self.assertFalse(sls['Slideshows']['Meta']['TotalResults'] == '0')
 
     def test_get_user_groups(self):
         api = slideshare.SlideshareAPI(API_KEY,SHARED_SECRET)
+        #XXX HTTPError: HTTP Error 500: Internal Server Error
+        #groups = api.get_user_groups(USERNAME)
+        #self.assertEqual(groups, '')
+        pass
+
+
     def test_get_user_favorites(self):
         api = slideshare.SlideshareAPI(API_KEY,SHARED_SECRET)
+        favs = api.get_user_favorites(USERNAME)
+        self.assertTrue('favorites' in favs)
+
     def test_get_user_contacts(self):
         api = slideshare.SlideshareAPI(API_KEY,SHARED_SECRET)
+        contacts = api.get_user_contacts(USERNAME)
+        self.assertTrue('Contacts' in contacts)
+
+
     def test_get_user_tags(self):
         api = slideshare.SlideshareAPI(API_KEY,SHARED_SECRET)
+        tags = api.get_user_tags(USERNAME, PASSWORD)
+        self.assertTrue('Tags' in tags)
+
     def test_edit_slideshow(self):
+        # you will have to substitute sl_id
+        # with a slideshow_id you are allowed to edit
+        sl_id = '21825929'
         api = slideshare.SlideshareAPI(API_KEY,SHARED_SECRET)
+        sls = api.edit_slideshow(USERNAME, PASSWORD, sl_id,
+            slideshow_title="Python Slideshare API",
+            slideshow_description = 'Python API for slideshare reinvented',
+            slideshow_tags = 'python',
+            )
+        self.assertEqual(sls['SlideShowEdited']['SlideShowID'], sl_id)
+
     def test_delete_slideshow(self):
+        # you will have to substitute sl_id
+        # with an existing slideshow_id you are allowed to delete
         api = slideshare.SlideshareAPI(API_KEY,SHARED_SECRET)
+        sl_id = '4275671656'
+        #sls = api.delete_slideshow(USERNAME, PASSWORD, sl_id)
+        #self.assertEqual(sls['SlideShowDeleted']['SlideShowID'], sl_id)
+
+
     def test_upload_slideshow(self):
         api = slideshare.SlideshareAPI(API_KEY,SHARED_SECRET)
+        url = 'https://github.com/cleder/slideshare/blob/master/slideshare/test1.odp?raw=true'
+        #sls = api.upload_slideshow(USERNAME, PASSWORD, 'Python Slideshare API',
+        #        upload_url=url,
+        #        slideshow_description = 'Python API for slideshare reinvented',
+        #        slideshow_tags = 'python')
+        #self.assertEqual(sls, '')
+
+
+
+
     def test_get_user_campaigns(self):
         api = slideshare.SlideshareAPI(API_KEY,SHARED_SECRET)
         campaign = api.get_user_campaigns(USERNAME, PASSWORD)
@@ -65,8 +110,8 @@ class BasicTestCase(unittest.TestCase):
         self.assertTrue('Leads' in lead)
 
     def test_get_user_campaign_leads(self):
-        api = slideshare.SlideshareAPI(API_KEY,SHARED_SECRET)
-
+        #api = slideshare.SlideshareAPI(API_KEY,SHARED_SECRET)
+        pass
 
 
 def test_suite():

@@ -19,3 +19,6 @@ You have to fill in the values of your slideshare account. Then you can
 run the tests with
 ::
     python setup.py test
+
+Some tests assume a slideshow_id you have to be able to edit or delete,
+you will have to change these values otherwise the tests will fail.
