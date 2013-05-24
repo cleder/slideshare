@@ -80,18 +80,13 @@ class BasicTestCase(unittest.TestCase):
             )
         self.assertEqual(sls['SlideShowEdited']['SlideShowID'], sl_id)
 
-    #def test_delete_slideshow(self):
-        # you will have to substitute sl_id
-        # with an existing slideshow_id you are allowed to delete
-        #api = slideshare.SlideshareAPI(API_KEY,SHARED_SECRET)
-        #sl_id = '4275671656'
-
-
 
     def test_upload_and_delete_slideshow(self):
         api = slideshare.SlideshareAPI(API_KEY,SHARED_SECRET)
         url = 'https://github.com/cleder/slideshare/blob/master/slideshare/test1.odp?raw=true'
-        sls = api.upload_slideshow(USERNAME, PASSWORD, 'Python Slideshare API',
+        ts = datetime.now().isoformat()
+        sls = api.upload_slideshow(USERNAME, PASSWORD,
+                slideshow_title = 'Python Slideshare API Test %s' % ts,
                 upload_url=url,
                 slideshow_description = 'Python API for slideshare reinvented',
                 slideshow_tags = 'python')
@@ -111,6 +106,18 @@ class BasicTestCase(unittest.TestCase):
         sls = api.delete_slideshow(USERNAME, PASSWORD, sl_id)
         self.assertEqual(sls['SlideShowDeleted']['SlideshowID'], sl_id)
 
+    def test_add_favorite(self):
+        api = slideshare.SlideshareAPI(API_KEY,SHARED_SECRET)
+        sl_id = '21834196'
+        sls = api.add_favorite(USERNAME, PASSWORD, sl_id)
+        self.assertEqual(sls['Slideshow']['SlideshowID'], sl_id)
+
+
+    def test_check_favorite(self):
+        api = slideshare.SlideshareAPI(API_KEY,SHARED_SECRET)
+        sl_id = '21834196'
+        sls = api.check_favorite(USERNAME, PASSWORD, sl_id)
+        self.assertEqual(sls['Slideshow']['SlideshowID'], sl_id)
 
 
     def test_get_user_campaigns(self):
@@ -124,7 +131,8 @@ class BasicTestCase(unittest.TestCase):
         self.assertTrue('Leads' in lead)
 
     def test_get_user_campaign_leads(self):
-        #api = slideshare.SlideshareAPI(API_KEY,SHARED_SECRET)
+        api = slideshare.SlideshareAPI(API_KEY,SHARED_SECRET)
+        #untested only available in pro version
         pass
 
 
