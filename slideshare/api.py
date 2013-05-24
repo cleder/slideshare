@@ -103,7 +103,7 @@ def callapi(func):
         ts = int(time.time())
         params = {
             'api_key': self.api_key,
-            'ts': str(ts),
+            'ts': ts,
             'hash': hashlib.sha1(self.sharedsecret + str(ts)).hexdigest(),
         }
         for k,v in fargs.iteritems():
@@ -119,7 +119,7 @@ def callapi(func):
                     fileHandle = v['filehandle'],
                     mimetype = v['mimetype'])
                 else:
-                    form.add_field(k,v)
+                    form.add_field(k,str(v))
             # Build the request
             request = urllib2.Request(service_url)
             body = str(form)
