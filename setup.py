@@ -1,5 +1,6 @@
 from setuptools import setup, find_packages
 import sys, os
+from setuptools.command.test import test as TestCommand
 
 version = '0.0'
 
@@ -8,7 +9,16 @@ def read(*rnames):
 
 long_description = read('README.rst')
 
-
+class PyTest(TestCommand):
+    def finalize_options(self):
+        TestCommand.finalize_options(self)
+        self.test_args = []
+        self.test_suite = True
+    def run_tests(self):
+        #import here, cause outside the eggs aren't loaded
+        import pytest
+        errno = pytest.main(self.test_args)
+        sys.exit(errno)
 
 setup(name='slideshare',
       version=version,
@@ -23,9 +33,11 @@ setup(name='slideshare',
       packages=find_packages(exclude=['ez_setup', 'examples', 'tests']),
       include_package_data=True,
       zip_safe=False,
+      tests_require=['pytest'],
+      cmdclass = {'test': PyTest},
       install_requires=[
           # -*- Extra requirements: -*-
-          'requests',
+          'poster',
           'xmltodict',
       ],
       entry_points="""

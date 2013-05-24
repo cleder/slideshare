@@ -1,7 +1,11 @@
-#
+# -*- coding: utf-8 -*-
 
 import time, hashlib
+import urllib2, urllib
+import logging
+logger = logging.getLogger('slideshare.api')
 
+#import poster
 import xmltodict
 
 from functools import wraps
@@ -15,13 +19,13 @@ def callapi(func):
 
         api_key: Set this to the API Key that SlideShare has provided for you.
         ts: Set this to the current time in Unix TimeStamp format, to the
-        nearest second(?).
+            nearest second(?).
         hash: Set this to the SHA1 hash of the concatenation of the shared
-        secret and the timestamp (ts).
+            secret and the timestamp (ts).
         """
 
         self = args[0]
-        fparams, fargs = func(*args, **kwargs)
+        fparams, fargs, rt = func(*args, **kwargs)
         #current time in Unix TimeStamp format, to the nearest second
         ts = int(time.time())
         params = {
@@ -32,12 +36,15 @@ def callapi(func):
         for k,v in fargs.iteritems():
             if (k in fparams) and v:
                 params[k] = v
-        print service_url
-        print params
-        #data = urllib2.urlopen(service_url, params).read()
-        #json = xmltodict.parse(data)
-        #return self.return_data(json)
-
+        logger.debug('open url %s' % service_url)
+        logger.debug('with parameters %s ' % str(params))
+        print service_url, params
+        eparams = urllib.urlencode(params)
+        data = urllib2.urlopen(service_url, eparams).read()
+        json = xmltodict.parse(data)
+        return json
+        #data = requests.post(service_url, params=params)
+        #return data
 
     return wrapper
 
@@ -88,11 +95,11 @@ class SlideshareAPI(object):
                 params.append('slideshow_url')
         else:
             raise ValueError
-        return params, kwargs
+        return params, kwargs, 'GET'
 
 
     @callapi
-    def get_slideshow_by_tag(self, tag, **kwargs):
+    def get_slideshows_by_tag(self, tag, **kwargs):
         """
         Get Slideshows By Tag
 
@@ -113,7 +120,7 @@ class SlideshareAPI(object):
         """
         params = ['tag', 'limit', 'offset', 'detailed']
         kwargs['tag'] = tag
-        return params, kwargs
+        return params, kwargs, 'GET'
 
     @callapi
     def get_slideshow_by_group(self, group_name, **kwargs):
@@ -138,10 +145,10 @@ class SlideshareAPI(object):
         """
         params = ['group_name', 'limit', 'offset', 'detailed']
         kwargs['group_name'] = group_name
-        return params, kwargs
+        return params, kwargs, 'GET'
 
     @callapi
-    def get_slideshows_by_user(self,username_for, **kwargs):
+    def get_slideshows_by_user(self, username_for, **kwargs):
         """
         Get Slideshows By User
 
@@ -167,8 +174,8 @@ class SlideshareAPI(object):
         params = ['username_for', 'username', 'password', 'limit',
             'offset', 'detailed', 'get_unconverted']
 
-        kwargs['username_for'] = group_name
-        return params, kwargs
+        kwargs['username_for'] = username_for
+        return params, kwargs, 'GET'
 
     @callapi
     def search_slideshows(self, q, **kwargs):
@@ -217,7 +224,7 @@ class SlideshareAPI(object):
             'upload_date', 'what', 'download', 'fileformat', 'file_type',
             'cc', 'cc_adapt', 'cc_commercial', 'detailed']
         kwargs['q'] = q
-        return params, kwargs
+        return params, kwargs, 'GET'
 
     @callapi
     def get_user_groups(self, username_for, **kwargs):
@@ -238,7 +245,7 @@ class SlideshareAPI(object):
         """
         params = ['username_for', 'username', 'password' ]
         kwargs['username_for'] = username_for
-        return params, kwargs
+        return params, kwargs, 'GET'
 
     @callapi
     def get_user_favorites(self, username_for):
@@ -254,7 +261,7 @@ class SlideshareAPI(object):
         username_for: username of user whose Favorites are being requested
         """
         params = ['username_for']
-        return params, {'username_for': username_for}
+        return params, {'username_for': username_for}, 'GET'
 
     @callapi
     def get_user_contacts(self, username_for, **kwargs):
@@ -276,7 +283,7 @@ class SlideshareAPI(object):
         """
         params = ['username_for', 'limit', 'offset' ]
         kwargs['username_for'] = username_for
-        return params, kwargs
+        return params, kwargs, 'GET'
 
     @callapi
     def get_user_tags(self, username, password):
@@ -295,7 +302,7 @@ class SlideshareAPI(object):
         params = ['username', 'password' ]
         kwargs['username'] = username
         kwargs['password'] = password
-        return params, kwargs
+        return params, kwargs, 'GET'
 
     @callapi
     def edit_slideshow(self,username, password, slideshow_id, **kwargs):
@@ -336,7 +343,7 @@ class SlideshareAPI(object):
         kwargs['username'] = username
         kwargs['password'] = password
         kwargs['slideshow_id'] = slideshow_id
-        return params, kwargs
+        return params, kwargs, 'GET'
 
     @callapi
     def delete_slideshow(self, username, password, slideshow_id):
@@ -358,7 +365,7 @@ class SlideshareAPI(object):
         kwargs['username'] = username
         kwargs['password'] = password
         kwargs['slideshow_id'] = slideshow_id
-        return params, kwargs
+        return params, kwargs, 'GET'
 
     @callapi
     def upload_slideshow(self, username, password,
@@ -441,7 +448,7 @@ class SlideshareAPI(object):
         kwargs['upload_url'] = upload_url
         kwargs['slideshow_description'] = slideshow_description
         kwargs['slideshow_tags'] = slideshow_tags
-        return params, kwargs
+        return params, kwargs, request_type
 
     @callapi
     def add_favorite(self, username, password, slideshow_id):
@@ -462,7 +469,7 @@ class SlideshareAPI(object):
         kwargs['username'] = username
         kwargs['password'] = password
         kwargs['slideshow_id'] = slideshow_id
-        return params, kwargs
+        return params, kwargs, 'GET'
 
     @callapi
     def check_favorite(self, username, password, slideshow_id):
@@ -483,7 +490,7 @@ class SlideshareAPI(object):
         kwargs['username'] = username
         kwargs['password'] = password
         kwargs['slideshow_id'] = slideshow_id
-        return params, kwargs
+        return params, kwargs, 'GET'
 
 
 
@@ -503,9 +510,10 @@ class SlideshareAPI(object):
         """
         request_type = 'POST'
         params = ['username', 'password']
+        kwargs = {}
         kwargs['username'] = username
         kwargs['password'] = password
-        return params, kwargs
+        return params, kwargs, request_type
 
     @callapi
     def get_user_leads(self, username, password, **kwargs):
@@ -532,7 +540,7 @@ class SlideshareAPI(object):
         params = ['username', 'password', 'begin', 'end' ]
         kwargs['username'] = username
         kwargs['password'] = password
-        return params, kwargs
+        return params, kwargs, request_type
 
     @callapi
     def get_user_campaign_leads(self, username, password, campaign_id, **kwargs):
@@ -558,4 +566,4 @@ class SlideshareAPI(object):
         kwargs['username'] = username
         kwargs['password'] = password
         kwargs['campaign_id'] = campaign_id
-        return params, kwargs
+        return params, kwargs, request_type
