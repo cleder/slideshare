@@ -5,10 +5,84 @@ import urllib2, urllib
 import logging
 logger = logging.getLogger('slideshare.api')
 
-#import poster
 import xmltodict
 
 from functools import wraps
+
+import itertools
+import mimetools
+import mimetypes
+
+class MultiPartForm(object):
+    """Accumulate the data to be used when posting a form."""
+    #'PyMOTW (http://www.doughellmann.com/PyMOTW/)'
+
+    def __init__(self):
+        self.form_fields = []
+        self.files = []
+        self.boundary = mimetools.choose_boundary()
+        return
+
+    def get_content_type(self):
+        return 'multipart/form-data; boundary=%s' % self.boundary
+
+    def add_field(self, name, value):
+        """Add a simple field to the form data."""
+        self.form_fields.append((name, value))
+        return
+
+    def add_file(self, fieldname, filename, fileHandle, mimetype=None):
+        """Add a file to be uploaded."""
+        body = fileHandle.read()
+        if mimetype is None:
+            mimetype = mimetypes.guess_type(filename)[0] or 'application/octet-stream'
+        self.files.append((fieldname, filename, mimetype, body))
+        return
+
+    def __str__(self):
+        """Return a string representing the form data, including attached files."""
+        # Build a list of lists, each containing "lines" of the
+        # request.  Each part is separated by a boundary string.
+        # Once the list is built, return a string where each
+        # line is separated by '\r\n'.
+        parts = []
+        part_boundary = '--' + self.boundary
+
+        # Add the form fields
+        parts.extend(
+            [ part_boundary,
+              'Content-Disposition: form-data; name="%s"' % name,
+              '',
+              value,
+            ]
+            for name, value in self.form_fields
+            )
+
+        # Add the files to upload
+        parts.extend(
+            [ part_boundary,
+              'Content-Disposition: file; name="%s"; filename="%s"' % \
+                 (field_name, filename),
+              'Content-Type: %s' % content_type,
+              '',
+              body,
+            ]
+            for field_name, filename, content_type, body in self.files
+            )
+
+        # Flatten the list and add closing boundary marker,
+        # then return CR+LF separated data
+        flattened = list(itertools.chain(*parts))
+        flattened.append('--' + self.boundary + '--')
+        flattened.append('')
+        for flat in flattened:
+            if not isinstance(flat, str):
+                print flat
+        return '\r\n'.join(flattened)
+
+
+
+
 
 def callapi(func):
     service_url = 'https://www.slideshare.net/api/2/' + func.__name__
@@ -23,14 +97,13 @@ def callapi(func):
         hash: Set this to the SHA1 hash of the concatenation of the shared
             secret and the timestamp (ts).
         """
-
         self = args[0]
         fparams, fargs, rt = func(*args, **kwargs)
         #current time in Unix TimeStamp format, to the nearest second
         ts = int(time.time())
         params = {
             'api_key': self.api_key,
-            'ts': ts,
+            'ts': str(ts),
             'hash': hashlib.sha1(self.sharedsecret + str(ts)).hexdigest(),
         }
         for k,v in fargs.iteritems():
@@ -38,13 +111,28 @@ def callapi(func):
                 params[k] = v
         logger.debug('open url %s' % service_url)
         logger.debug('with parameters %s ' % str(params))
-        eparams = urllib.urlencode(params)
-        print service_url, eparams
-        data = urllib2.urlopen(service_url, eparams).read()
+        if 'slideshow_srcfile' in params:
+            form = MultiPartForm()
+            for k,v in params.iteritems():
+                if k == 'slideshow_srcfile':
+                    form.add_file(k, filename = v['filename'],
+                    fileHandle = v['filehandle'],
+                    mimetype = v['mimetype'])
+                else:
+                    form.add_field(k,v)
+            # Build the request
+            request = urllib2.Request(service_url)
+            body = str(form)
+            request.add_header('Content-type', form.get_content_type())
+            request.add_header('Content-length', len(body))
+            request.add_data(body)
+            data = urllib2.urlopen(request).read()
+            print data
+        else:
+            eparams = urllib.urlencode(params)
+            data = urllib2.urlopen(service_url, eparams).read()
         json = xmltodict.parse(data)
         return json
-        #data = requests.post(service_url, params=params)
-        #return data
 
     return wrapper
 
@@ -338,7 +426,7 @@ class SlideshareAPI(object):
         params = ['username', 'password', 'slideshow_id', 'slideshow_title',
         'slideshow_description', 'slideshow_tags', 'make_slideshow_private']
         if 'make_slideshow_private' in kwargs:
-            if kwargs['make_slideshow_private'] == Y:
+            if kwargs['make_slideshow_private'] == 'Y':
                 params += ['generate_secret_url', 'allow_embeds',
                 'share_with_contacts']
         kwargs['username'] = username
@@ -467,6 +555,7 @@ class SlideshareAPI(object):
         slideshow_id: the slideshow to be favorited
         """
         params = ['username', 'password', 'slideshow_id']
+        kwargs ={}
         kwargs['username'] = username
         kwargs['password'] = password
         kwargs['slideshow_id'] = slideshow_id
@@ -488,6 +577,7 @@ class SlideshareAPI(object):
         slideshow_id: Slideshow which would be favorited
         """
         params = ['username', 'password', 'slideshow_id']
+        kwargs = {}
         kwargs['username'] = username
         kwargs['password'] = password
         kwargs['slideshow_id'] = slideshow_id

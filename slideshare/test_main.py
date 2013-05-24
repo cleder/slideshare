@@ -7,17 +7,19 @@ except:
     API_KEY = SHARED_SECRET = USERNAME = PASSWORD = None
 import slideshare
 
+from datetime import datetime
 
 class BasicTestCase(unittest.TestCase):
 
     def test_get_slideshow(self):
         api = slideshare.SlideshareAPI(API_KEY,SHARED_SECRET)
         #get slideshow by id
-        sls = api.get_slideshow(slideshow_id='21825929')
-        self.assertEqual(sls['Slideshow']['ID'], '21825929')
+        sl_id = '21834196'
+        sls = api.get_slideshow(slideshow_id=sl_id)
+        self.assertEqual(sls['Slideshow']['ID'], sl_id)
         sls = api.get_slideshow(slideshow_url=
-            "http://www.slideshare.net/slidesharepython/test1-21825929")
-        self.assertEqual(sls['Slideshow']['ID'], '21825929')
+            "http://www.slideshare.net/slidesharepython/python-slideshare-api-test-20130524t162943687234")
+        self.assertEqual(sls['Slideshow']['ID'], sl_id)
 
 
     def test_get_slideshows_by_tag(self):
@@ -69,33 +71,45 @@ class BasicTestCase(unittest.TestCase):
     def test_edit_slideshow(self):
         # you will have to substitute sl_id
         # with a slideshow_id you are allowed to edit
-        sl_id = '21825929'
+        sl_id = '21834196'
         api = slideshare.SlideshareAPI(API_KEY,SHARED_SECRET)
         sls = api.edit_slideshow(USERNAME, PASSWORD, sl_id,
             slideshow_title="Python Slideshare API",
             slideshow_description = 'Python API for slideshare reinvented',
-            slideshow_tags = 'python',
+            slideshow_tags = 'python, plone, ',
             )
         self.assertEqual(sls['SlideShowEdited']['SlideShowID'], sl_id)
 
-    def test_delete_slideshow(self):
+    #def test_delete_slideshow(self):
         # you will have to substitute sl_id
         # with an existing slideshow_id you are allowed to delete
-        api = slideshare.SlideshareAPI(API_KEY,SHARED_SECRET)
-        sl_id = '4275671656'
-        #sls = api.delete_slideshow(USERNAME, PASSWORD, sl_id)
-        #self.assertEqual(sls['SlideShowDeleted']['SlideShowID'], sl_id)
+        #api = slideshare.SlideshareAPI(API_KEY,SHARED_SECRET)
+        #sl_id = '4275671656'
 
 
-    def test_upload_slideshow(self):
+
+    def test_upload_and_delete_slideshow(self):
         api = slideshare.SlideshareAPI(API_KEY,SHARED_SECRET)
         url = 'https://github.com/cleder/slideshare/blob/master/slideshare/test1.odp?raw=true'
-        #sls = api.upload_slideshow(USERNAME, PASSWORD, 'Python Slideshare API',
-        #        upload_url=url,
-        #        slideshow_description = 'Python API for slideshare reinvented',
-        #        slideshow_tags = 'python')
-        #self.assertEqual(sls, '')
-
+        sls = api.upload_slideshow(USERNAME, PASSWORD, 'Python Slideshare API',
+                upload_url=url,
+                slideshow_description = 'Python API for slideshare reinvented',
+                slideshow_tags = 'python')
+        sl_id = sls['SlideShowUploaded']['SlideShowID']
+        sls = api.delete_slideshow(USERNAME, PASSWORD, sl_id)
+        self.assertEqual(sls['SlideShowDeleted']['SlideshowID'], sl_id)
+        f = open('slideshare/test1.odp')
+        ts = datetime.now().isoformat()
+        sls = api.upload_slideshow(USERNAME, PASSWORD,
+                'Python Slideshare API Test %s' % ts,
+                slideshow_srcfile={
+                'filename': 'yat%s.odf' % ts,
+                'mimetype':'application/vnd.oasis.opendocument.presentation',
+                'filehandle': f,
+                })
+        sl_id = sls['SlideShowUploaded']['SlideShowID']
+        sls = api.delete_slideshow(USERNAME, PASSWORD, sl_id)
+        self.assertEqual(sls['SlideShowDeleted']['SlideshowID'], sl_id)
 
 
 

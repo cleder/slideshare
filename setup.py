@@ -37,7 +37,6 @@ setup(name='slideshare',
       cmdclass = {'test': PyTest},
       install_requires=[
           # -*- Extra requirements: -*-
-          'poster',
           'xmltodict',
       ],
       entry_points="""
