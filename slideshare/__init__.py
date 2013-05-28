@@ -1,3 +1,3 @@
 #
 
-from .api import SlideshareAPI
+from .api import SlideshareAPI, SlideShareServiceError

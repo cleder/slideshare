@@ -11,6 +11,28 @@ from datetime import datetime
 
 class BasicTestCase(unittest.TestCase):
 
+    def test_SlideShareServiceError(self):
+        api = slideshare.SlideshareAPI(API_KEY,SHARED_SECRET)
+        api.api_key=None
+        sl_id = '21834196'
+        try:
+            api.get_slideshow(slideshow_id=sl_id)
+            raise Exception
+        except slideshare.SlideShareServiceError, exc:
+            self.assertEqual(exc.errno, '1')
+        api.api_key = API_KEY
+        try:
+            api.get_slideshow(slideshow_id=sl_id, username='NoSuchUser', password='none' )
+            raise Exception
+        except slideshare.SlideShareServiceError, exc:
+            self.assertEqual(exc.errno, '2')
+        try:
+            api.get_slideshow(slideshow_id='none' )
+            raise Exception
+        except slideshare.SlideShareServiceError, exc:
+            self.assertEqual(exc.errno, '9')
+
+
     def test_get_slideshow(self):
         api = slideshare.SlideshareAPI(API_KEY,SHARED_SECRET)
         #get slideshow by id

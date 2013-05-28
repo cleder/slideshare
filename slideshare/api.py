@@ -2,6 +2,7 @@
 
 import time, hashlib
 import urllib2, urllib
+from urlparse import urlparse, urlunparse
 import logging
 logger = logging.getLogger('slideshare.api')
 
@@ -81,6 +82,13 @@ class MultiPartForm(object):
         return '\r\n'.join(flattened)
 
 
+class SlideShareServiceError(Exception):
+    """ custom exceptions """
+    def __init__(self, errno, errmsg):
+         self.errno = errno
+         self.errmsg = errmsg
+    def __str__(self):
+        return 'SlideShareServiceError %s: %s' %(self.errno, self.errmsg)
 
 
 
@@ -127,11 +135,16 @@ def callapi(func):
             request.add_header('Content-length', len(body))
             request.add_data(body)
             data = urllib2.urlopen(request).read()
-            print data
         else:
             eparams = urllib.urlencode(params)
             data = urllib2.urlopen(service_url, eparams).read()
         json = xmltodict.parse(data)
+        if json.get('SlideShareServiceError'):
+            print data
+            print json
+            raise SlideShareServiceError(
+                json['SlideShareServiceError']['Message']['@ID'],
+                json['SlideShareServiceError']['Message']['#text'])
         return json
 
     return wrapper
@@ -179,8 +192,14 @@ class SlideshareAPI(object):
                 kwargs['slideshow_id'] = slideshow_id
                 params.append('slideshow_id')
             else:
-                kwargs['slideshow_url'] = slideshow_url
-                params.append('slideshow_url')
+                urlob = urlparse(slideshow_url)
+                if urlob.hostname == 'www.slideshare.net':
+                    url = urlunparse([urlob.scheme, urlob.netloc,
+                        urlob.path, '', '', ''])
+                    params.append('slideshow_url')
+                    kwargs['slideshow_url'] = url
+                else:
+                    raise ValueError
         else:
             raise ValueError
         return params, kwargs, 'GET'
