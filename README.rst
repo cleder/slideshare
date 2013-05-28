@@ -62,7 +62,8 @@ Links
 -----
 
 - Code repository: https://github.com/cleder/slideshare
-- Report bugs at https://github.com/cleder/slideshare/issues
+- Report bugs at: https://github.com/cleder/slideshare/issues
+- Questions and comments to: http://groups.google.com/group/slideshare-developers
 
 
 .. _tests: https://github.com/cleder/slideshare/blob/master/slideshare/test_main.py
