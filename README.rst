@@ -43,7 +43,9 @@ Testing
 --------
 
 You need to create a file secret.py which has the content
+
 ::
+
     # DO NOT check these into git
     API_KEY = 'your api key'
     SHARED_SECRET = 'your shared secret'
@@ -52,7 +54,9 @@ You need to create a file secret.py which has the content
 
 You have to fill in the values of your slideshare account. Then you can
 run the tests with
+
 ::
+
     python setup.py test
 
 Some tests assume a slideshow_id you have to be able to edit or delete,
