@@ -1,7 +1,7 @@
 Introduction
 =============
 
-Lean and complete Slideshare API Implementation.
+Lean and complete SlideShare_ API Implementation.
 
 Usage
 -----
@@ -14,10 +14,11 @@ Usage
     >>> sl_id = '21834196'
     >>> api.get_slideshow(slideshow_id=sl_id)
 
-For more examples please refer to the tests
+For more examples please refer to the tests_
 
 
-Methods:
+Methods
+--------
 
 - add_favorite
 - check_favorite
@@ -56,3 +57,15 @@ run the tests with
 
 Some tests assume a slideshow_id you have to be able to edit or delete,
 you will have to change these values otherwise the tests will fail.
+
+Links
+-----
+
+- Code repository: https://github.com/cleder/slideshare
+- Report bugs at https://github.com/cleder/slideshare/issues
+
+
+.. _tests: https://github.com/cleder/slideshare/blob/master/slideshare/test_main.py
+.. _SlideShare: http://www.slideshare.net/
+
+
