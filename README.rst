@@ -1,11 +1,45 @@
+Introduction
+=============
 
 Lean and complete Slideshare API Implementation.
 
+Usage
+-----
+
+    >>> import slideshare
+    >>> API_KEY = 'ABC' #You have to provide your own valid key here
+    >>> SHARED_SECRET = 'DEFG' #You have to provide your own valid secret here
+    >>> api = slideshare.SlideshareAPI(API_KEY,SHARED_SECRET)
+    >>> help(slideshare.SlideshareAPI)
+    >>> sl_id = '21834196'
+    >>> api.get_slideshow(slideshow_id=sl_id)
+
+For more examples please refer to the tests
 
 
+Methods:
 
-Testing:
-========
+- add_favorite
+- check_favorite
+- delete_slideshow
+- edit_slideshow
+- get_slideshow
+- get_slideshow_by_group (untested)
+- get_slideshows_by_tag
+- get_slideshows_by_user
+- get_user_campaign_leads (untested)
+- get_user_campaigns
+- get_user_contacts
+- get_user_favorites
+- get_user_groups (raises HTTPError: HTTP Error 500: Internal Server Error)
+- get_user_leads
+- get_user_tags
+- search_slideshows
+- upload_slideshow
+
+
+Testing
+--------
 
 You need to create a file secret.py which has the content
 ::
